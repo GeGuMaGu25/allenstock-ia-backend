@@ -2,6 +2,8 @@ using AllenStock.API.Catalog.Application.Services;
 using AllenStock.API.Catalog.Presentation.Endpoints;
 using AllenStock.API.Inventory.Application.Services;
 using AllenStock.API.Inventory.Presentation.Endpoints;
+using AllenStock.API.Sales.Application.Services;
+using AllenStock.API.Sales.Presentation.Endpoints;
 using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +33,9 @@ builder.Services.AddScoped<ICatalogService, CatalogService>();
 // Registrar el servicio de inventario
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
+// Registrar el servicio de ventas
+builder.Services.AddScoped<ISalesService, SalesService>();
+
 var app = builder.Build();
 
 app.UseCors("VueCorsPolicy");
@@ -43,5 +48,8 @@ app.MapCatalogEndpoints();
 
 // Registrar los endpoints de inventario
 app.MapInventoryEndpoints();
+
+// Registrar los endpoints de ventas
+app.MapSalesEndpoints();
 
 app.Run();
