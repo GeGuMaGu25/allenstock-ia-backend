@@ -29,8 +29,7 @@ public class PromotionsService : IPromotionsService
             ProductId = dto.producto_id,
             DiscountPercentage = dto.porcentaje_descuento,
             Reason = dto.justificacion_ia,
-            Status = "Activa",
-            CreatedAt = DateTime.UtcNow
+            Status = "Activa"
         };
 
         _context.Promotions.Add(promotion);
