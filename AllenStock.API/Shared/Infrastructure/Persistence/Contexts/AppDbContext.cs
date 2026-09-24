@@ -1,4 +1,5 @@
-﻿using AllenStock.API.Catalog.Domain.Entities;
+﻿using AllenStock.API.Cash.Domain.Entities;
+using AllenStock.API.Catalog.Domain.Entities;
 using AllenStock.API.Inventory.Domain.Entities;
 using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,8 @@ public class AppDbContext : DbContext
     
     public DbSet<Sale> Sales { get; set; }
     public DbSet<SaleDetail> SaleDetails { get; set; }
+    
+    public DbSet<CashSession> CashSessions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,6 +114,24 @@ public class AppDbContext : DbContext
                   .WithMany(s => s.Details)
                   .HasForeignKey(d => d.SaleId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // Mapeo estricto de Sesiones de Caja
+        modelBuilder.Entity<CashSession>(entity =>
+        {
+            entity.ToTable("Sesiones_Caja");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.UserId).HasColumnName("usuario_id").IsRequired();
+            
+            entity.Property(e => e.InitialAmount).HasColumnName("monto_inicial").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.ExpectedFinalAmount).HasColumnName("monto_final_esperado").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.RealFinalAmount).HasColumnName("monto_final_real").HasColumnType("decimal(10,2)");
+            
+            entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(20).HasDefaultValue("Abierta");
+            
+            entity.Property(e => e.OpenedAt).HasColumnName("fecha_apertura").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.ClosedAt).HasColumnName("fecha_cierre");
         });
         
         // ---> SEEDING: Inserción de datos iniciales
