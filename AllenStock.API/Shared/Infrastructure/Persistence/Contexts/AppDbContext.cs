@@ -1,5 +1,6 @@
 ﻿using AllenStock.API.Catalog.Domain.Entities;
 using AllenStock.API.Inventory.Domain.Entities;
+using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 namespace AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 
@@ -12,6 +13,9 @@ public class AppDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     
     public DbSet<Kardex> KardexRecords { get; set; }
+    
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleDetail> SaleDetails { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +70,47 @@ public class AppDbContext : DbContext
             entity.Property(e => e.MovementDate)
                 .HasColumnName("fecha_movimiento")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+        
+        // Mapeo estricto de Ventas
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.ToTable("Ventas");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.CashSessionId).HasColumnName("sesion_caja_id");
+            entity.Property(e => e.UserId).HasColumnName("usuario_id");
+            
+            entity.Property(e => e.ReceiptType).HasColumnName("comprobante_tipo").HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ReceiptNumber).HasColumnName("comprobante_numero").HasMaxLength(50).IsRequired();
+            
+            entity.Property(e => e.Subtotal).HasColumnName("subtotal").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.Taxes).HasColumnName("impuestos").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.Total).HasColumnName("total").HasColumnType("decimal(10,2)").IsRequired();
+            
+            entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(20).HasDefaultValue("Completada");
+            entity.Property(e => e.Date).HasColumnName("fecha").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        // Mapeo estricto de Detalles de Venta
+        modelBuilder.Entity<SaleDetail>(entity =>
+        {
+            entity.ToTable("Detalle_Ventas");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.SaleId).HasColumnName("venta_id").IsRequired();
+            entity.Property(e => e.ProductId).HasColumnName("producto_id").IsRequired();
+            
+            entity.Property(e => e.Quantity).HasColumnName("cantidad").IsRequired();
+            entity.Property(e => e.UnitPrice).HasColumnName("precio_unitario").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.Discount).HasColumnName("descuento").HasColumnType("decimal(10,2)").HasDefaultValue(0.00m);
+            entity.Property(e => e.Subtotal).HasColumnName("subtotal").HasColumnType("decimal(10,2)").IsRequired();
+            
+            // Configurar relación 1 a muchos (Una venta tiene muchos detalles)
+            entity.HasOne(d => d.Sale)
+                  .WithMany(s => s.Details)
+                  .HasForeignKey(d => d.SaleId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
         
         // ---> SEEDING: Inserción de datos iniciales
