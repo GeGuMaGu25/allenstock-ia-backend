@@ -183,19 +183,5 @@ public class AppDbContext : DbContext
                 SupplierId = 1 
             }
         );
-        
-        // ---> SEEDING: Usuario Administrador por defecto
-        // NOTA: En un entorno real usaríamos BCrypt, aquí usaremos un hash simplificado para la prueba
-        modelBuilder.Entity<User>().HasData(
-            new User 
-            { 
-                Id = 1, 
-                FullName = "Gustavo Alonso Olivares Lao", 
-                Email = "admin@allentech.com", 
-                // Hash BCrypt pre-generado para la contraseña "Admin123!"
-                PasswordHash = "$2a$11$0uM.3C/1.BfP/K3nF4L33O3yJz2hR6JgO6.M3XlY1iM3J1.3.3.3.", 
-                Role = "Administrador" 
-            }
-        );
     }
 }

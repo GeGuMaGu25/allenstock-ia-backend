@@ -91,4 +91,22 @@ app.MapCashEndpoints();
 // ---> 4. REGISTRAR EL ENDPOINT DE LOGIN
 app.MapIamEndpoints();
 
+// Generar usuario administrador al iniciar el servidor
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (!db.Users.Any(u => u.Email == "admin@allentech.com"))
+    {
+        db.Users.Add(new AllenStock.API.IAM.Domain.Entities.User
+        {
+            FullName = "Gustavo Alonso Olivares Lao",
+            Email = "admin@allentech.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+            Role = "Administrador",
+            IsActive = true
+        });
+        db.SaveChanges();
+    }
+}
+
 app.Run();
