@@ -1,6 +1,6 @@
 ﻿using AllenStock.API.Catalog.Domain.Entities;
+using AllenStock.API.Inventory.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-
 namespace AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 
 public class AppDbContext : DbContext
@@ -10,6 +10,8 @@ public class AppDbContext : DbContext
     // Registramos las tablas
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
+    
+    public DbSet<Kardex> KardexRecords { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +47,25 @@ public class AppDbContext : DbContext
             // Foráneas
             entity.Property(e => e.CategoryId).HasColumnName("categoria_id");
             entity.Property(e => e.SupplierId).HasColumnName("proveedor_id");
+        });
+        
+        // Mapeo estricto del Kardex
+        modelBuilder.Entity<Kardex>(entity =>
+        {
+            entity.ToTable("Kardex");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.ProductId).HasColumnName("producto_id").IsRequired();
+            entity.Property(e => e.UserId).HasColumnName("usuario_id");
+            
+            entity.Property(e => e.MovementType).HasColumnName("tipo_movimiento").HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Quantity).HasColumnName("cantidad").IsRequired();
+            entity.Property(e => e.Reason).HasColumnName("motivo").HasMaxLength(50).IsRequired();
+            
+            // Usamos la función nativa de PostgreSQL para la fecha por defecto
+            entity.Property(e => e.MovementDate)
+                .HasColumnName("fecha_movimiento")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
         
         // ---> SEEDING: Inserción de datos iniciales
