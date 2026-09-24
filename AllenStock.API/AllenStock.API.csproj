@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <Folder Include="Analytics\" />
-      <Folder Include="Cash\" />
       <Folder Include="IAM\" />
       <Folder Include="Promotions\" />
       <Folder Include="Purchasing\" />
