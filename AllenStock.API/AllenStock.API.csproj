@@ -28,7 +28,6 @@
       <Folder Include="Promotions\" />
       <Folder Include="Purchasing\" />
       <Folder Include="Sales\" />
-      <Folder Include="Shared\" />
     </ItemGroup>
 
 </Project>
