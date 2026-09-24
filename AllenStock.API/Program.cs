@@ -1,3 +1,5 @@
+using AllenStock.API.Catalog.Application.Services;
+using AllenStock.API.Catalog.Presentation.Endpoints;
 using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +12,28 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+// ---> 1. CONFIGURAR CORS PARA QUE VUE (PUERTO 5173) PUEDA CONECTARSE
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("VueCorsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+// ---> 2. INYECCIÓN DE DEPENDENCIAS: Registrar el servicio del catálogo
+builder.Services.AddScoped<ICatalogService, CatalogService>();
+
 var app = builder.Build();
+
+app.UseCors("VueCorsPolicy");
 
 // 3. Endpoint base de prueba
 app.MapGet("/", () => "AllenStock AI API - Funcionando correctamente");
+
+// ---> 3. REGISTRAR LOS ENDPOINTS DE CATÁLOGO
+app.MapCatalogEndpoints();
 
 app.Run();
