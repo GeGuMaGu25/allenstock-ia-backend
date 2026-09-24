@@ -1,5 +1,6 @@
 ﻿using AllenStock.API.Cash.Domain.Entities;
 using AllenStock.API.Catalog.Domain.Entities;
+using AllenStock.API.IAM.Domain.Entities;
 using AllenStock.API.Inventory.Domain.Entities;
 using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public class AppDbContext : DbContext
     public DbSet<SaleDetail> SaleDetails { get; set; }
     
     public DbSet<CashSession> CashSessions { get; set; }
+    
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -134,6 +137,24 @@ public class AppDbContext : DbContext
             entity.Property(e => e.ClosedAt).HasColumnName("fecha_cierre");
         });
         
+        // Mapeo estricto de Usuarios (IAM)
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("Usuarios");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.FullName).HasColumnName("nombre_completo").HasMaxLength(150).IsRequired();
+            
+            entity.Property(e => e.Email).HasColumnName("correo").HasMaxLength(150).IsRequired();
+            entity.HasIndex(e => e.Email).IsUnique(); // El correo no se puede repetir
+            
+            entity.Property(e => e.PasswordHash).HasColumnName("contrasena_hash").IsRequired();
+            entity.Property(e => e.Role).HasColumnName("rol").HasMaxLength(50).HasDefaultValue("Cajero");
+            
+            entity.Property(e => e.IsActive).HasColumnName("activo").HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+        
         // ---> SEEDING: Inserción de datos iniciales
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Electrónica", Description = "Laptops, monitores y componentes" },
@@ -160,6 +181,20 @@ public class AppDbContext : DbContext
                 SalePrice = 85.50m, 
                 CurrentStock = 25, 
                 SupplierId = 1 
+            }
+        );
+        
+        // ---> SEEDING: Usuario Administrador por defecto
+        // NOTA: En un entorno real usaríamos BCrypt, aquí usaremos un hash simplificado para la prueba
+        modelBuilder.Entity<User>().HasData(
+            new User 
+            { 
+                Id = 1, 
+                FullName = "Gustavo Alonso Olivares Lao", 
+                Email = "admin@allentech.com", 
+                // Hash BCrypt pre-generado para la contraseña "Admin123!"
+                PasswordHash = "$2a$11$0uM.3C/1.BfP/K3nF4L33O3yJz2hR6JgO6.M3XlY1iM3J1.3.3.3.", 
+                Role = "Administrador" 
             }
         );
     }
