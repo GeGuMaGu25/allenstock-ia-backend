@@ -2,6 +2,7 @@
 using AllenStock.API.Catalog.Domain.Entities;
 using AllenStock.API.IAM.Domain.Entities;
 using AllenStock.API.Inventory.Domain.Entities;
+using AllenStock.API.Purchasing.Domain.Entities;
 using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 namespace AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
@@ -22,6 +23,8 @@ public class AppDbContext : DbContext
     public DbSet<CashSession> CashSessions { get; set; }
     
     public DbSet<User> Users { get; set; }
+    
+    public DbSet<SupplierClaim> SupplierClaims { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -152,6 +155,22 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Role).HasColumnName("rol").HasMaxLength(50).HasDefaultValue("Cajero");
             
             entity.Property(e => e.IsActive).HasColumnName("activo").HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+        
+        // Mapeo estricto de Reclamos a Proveedores (Purchasing)
+        modelBuilder.Entity<SupplierClaim>(entity =>
+        {
+            entity.ToTable("Reclamos_Proveedores");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.KardexId).HasColumnName("kardex_id").IsRequired();
+            entity.Property(e => e.SupplierId).HasColumnName("proveedor_id").IsRequired();
+            
+            entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(50).HasDefaultValue("Notificado");
+            entity.Property(e => e.ScheduledDate).HasColumnName("fecha_programada").HasColumnType("date");
+            entity.Property(e => e.Observations).HasColumnName("observaciones").HasColumnType("text");
+            
             entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
         
