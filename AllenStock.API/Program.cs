@@ -1,3 +1,5 @@
+using AllenStock.API.Cash.Application.Services;
+using AllenStock.API.Cash.Presentation.Endpoints;
 using AllenStock.API.Catalog.Application.Services;
 using AllenStock.API.Catalog.Presentation.Endpoints;
 using AllenStock.API.Inventory.Application.Services;
@@ -36,6 +38,9 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 // Registrar el servicio de ventas
 builder.Services.AddScoped<ISalesService, SalesService>();
 
+// Registrar el servicio de caja
+builder.Services.AddScoped<ICashService, CashService>();
+
 var app = builder.Build();
 
 app.UseCors("VueCorsPolicy");
@@ -51,5 +56,8 @@ app.MapInventoryEndpoints();
 
 // Registrar los endpoints de ventas
 app.MapSalesEndpoints();
+
+// Registrar los endpoints de caja
+app.MapCashEndpoints();
 
 app.Run();
