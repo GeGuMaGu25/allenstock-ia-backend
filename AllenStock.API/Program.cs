@@ -1,4 +1,6 @@
 using System.Text;
+using AllenStock.API.Analytics.Application.Services;
+using AllenStock.API.Analytics.Presentation.Endpoints;
 using AllenStock.API.Cash.Application.Services;
 using AllenStock.API.Cash.Presentation.Endpoints;
 using AllenStock.API.Catalog.Application.Services;
@@ -7,6 +9,8 @@ using AllenStock.API.IAM.Application.Services;
 using AllenStock.API.IAM.Presentation.Endpoints;
 using AllenStock.API.Inventory.Application.Services;
 using AllenStock.API.Inventory.Presentation.Endpoints;
+using AllenStock.API.Promotions.Application.Services;
+using AllenStock.API.Promotions.Presentation.Endpoints;
 using AllenStock.API.Purchasing.Application.Services;
 using AllenStock.API.Purchasing.Presentation.Endpoints;
 using AllenStock.API.Sales.Application.Services;
@@ -70,6 +74,10 @@ builder.Services.AddScoped<ISalesService, SalesService>();
 // Registrar el servicio de caja
 builder.Services.AddScoped<ICashService, CashService>();
 
+// Registrar servicios de IA y Promociones
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IPromotionsService, PromotionsService>();
+
 var app = builder.Build();
 
 app.UseCors("VueCorsPolicy");
@@ -98,6 +106,10 @@ app.MapIamEndpoints();
 
 // Registrar los endpoints de compras
 app.MapPurchasingEndpoints();
+
+// Registrar endpoints de IA y Promociones
+app.MapAnalyticsEndpoints();
+app.MapPromotionsEndpoints();
 
 // Generar usuario administrador al iniciar el servidor
 using (var scope = app.Services.CreateScope())
