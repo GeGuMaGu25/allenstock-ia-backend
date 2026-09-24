@@ -7,6 +7,8 @@ using AllenStock.API.IAM.Application.Services;
 using AllenStock.API.IAM.Presentation.Endpoints;
 using AllenStock.API.Inventory.Application.Services;
 using AllenStock.API.Inventory.Presentation.Endpoints;
+using AllenStock.API.Purchasing.Application.Services;
+using AllenStock.API.Purchasing.Presentation.Endpoints;
 using AllenStock.API.Sales.Application.Services;
 using AllenStock.API.Sales.Presentation.Endpoints;
 using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
@@ -53,6 +55,9 @@ builder.Services.AddAuthorization(); // Habilitar validación de roles
 // ---> 2. INYECCIÓN DEL SERVICIO IAM (Debajo de los otros servicios)
 builder.Services.AddScoped<IIamService, IamService>();
 
+// Registrar el servicio de compras
+builder.Services.AddScoped<IPurchasingService, PurchasingService>();
+
 // ---> 2. INYECCIÓN DE DEPENDENCIAS: Registrar el servicio del catálogo
 builder.Services.AddScoped<ICatalogService, CatalogService>();
 
@@ -90,6 +95,9 @@ app.MapCashEndpoints();
 
 // ---> 4. REGISTRAR EL ENDPOINT DE LOGIN
 app.MapIamEndpoints();
+
+// Registrar los endpoints de compras
+app.MapPurchasingEndpoints();
 
 // Generar usuario administrador al iniciar el servidor
 using (var scope = app.Services.CreateScope())
