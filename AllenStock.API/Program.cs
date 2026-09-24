@@ -1,5 +1,7 @@
 using AllenStock.API.Catalog.Application.Services;
 using AllenStock.API.Catalog.Presentation.Endpoints;
+using AllenStock.API.Inventory.Application.Services;
+using AllenStock.API.Inventory.Presentation.Endpoints;
 using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +28,9 @@ builder.Services.AddCors(options =>
 // ---> 2. INYECCIÓN DE DEPENDENCIAS: Registrar el servicio del catálogo
 builder.Services.AddScoped<ICatalogService, CatalogService>();
 
+// Registrar el servicio de inventario
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+
 var app = builder.Build();
 
 app.UseCors("VueCorsPolicy");
@@ -35,5 +40,8 @@ app.MapGet("/", () => "AllenStock AI API - Funcionando correctamente");
 
 // ---> 3. REGISTRAR LOS ENDPOINTS DE CATÁLOGO
 app.MapCatalogEndpoints();
+
+// Registrar los endpoints de inventario
+app.MapInventoryEndpoints();
 
 app.Run();
