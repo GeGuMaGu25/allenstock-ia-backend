@@ -2,6 +2,7 @@
 using AllenStock.API.Catalog.Domain.Entities;
 using AllenStock.API.IAM.Domain.Entities;
 using AllenStock.API.Inventory.Domain.Entities;
+using AllenStock.API.Promotions.Domain.Entities;
 using AllenStock.API.Purchasing.Domain.Entities;
 using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     
     public DbSet<SupplierClaim> SupplierClaims { get; set; }
+    
+    public DbSet<Promotion> Promotions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -170,6 +173,21 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(50).HasDefaultValue("Notificado");
             entity.Property(e => e.ScheduledDate).HasColumnName("fecha_programada").HasColumnType("date");
             entity.Property(e => e.Observations).HasColumnName("observaciones").HasColumnType("text");
+            
+            entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+        
+        // Mapeo estricto de Promociones
+        modelBuilder.Entity<Promotion>(entity =>
+        {
+            entity.ToTable("Promociones");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.ProductId).HasColumnName("producto_id").IsRequired();
+            
+            entity.Property(e => e.DiscountPercentage).HasColumnName("porcentaje_descuento").HasColumnType("decimal(5,2)").IsRequired();
+            entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(20).HasDefaultValue("Activa");
+            entity.Property(e => e.Reason).HasColumnName("justificacion_ia").HasColumnType("text");
             
             entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
