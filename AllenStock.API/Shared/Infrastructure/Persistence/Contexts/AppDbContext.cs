@@ -46,5 +46,34 @@ public class AppDbContext : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("categoria_id");
             entity.Property(e => e.SupplierId).HasColumnName("proveedor_id");
         });
+        
+        // ---> SEEDING: Inserción de datos iniciales
+        modelBuilder.Entity<Category>().HasData(
+            new Category { Id = 1, Name = "Electrónica", Description = "Laptops, monitores y componentes" },
+            new Category { Id = 2, Name = "Accesorios", Description = "Periféricos y cables" }
+        );
+
+        modelBuilder.Entity<Product>().HasData(
+            new Product { 
+                Id = 1, 
+                Barcode = "7751234567890", 
+                Name = "Laptop ASUS ROG", 
+                CategoryId = 1, 
+                PurchasePrice = 1200.00m, 
+                SalePrice = 1500.00m, 
+                CurrentStock = 10, 
+                SupplierId = 1 
+            },
+            new Product { 
+                Id = 2, 
+                Barcode = "7750987654321", 
+                Name = "Teclado Mecánico", 
+                CategoryId = 2, 
+                PurchasePrice = 50.00m, 
+                SalePrice = 85.50m, 
+                CurrentStock = 25, 
+                SupplierId = 1 
+            }
+        );
     }
 }
