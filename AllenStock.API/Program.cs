@@ -1,13 +1,18 @@
+using System.Text;
 using AllenStock.API.Cash.Application.Services;
 using AllenStock.API.Cash.Presentation.Endpoints;
 using AllenStock.API.Catalog.Application.Services;
 using AllenStock.API.Catalog.Presentation.Endpoints;
+using AllenStock.API.IAM.Application.Services;
+using AllenStock.API.IAM.Presentation.Endpoints;
 using AllenStock.API.Inventory.Application.Services;
 using AllenStock.API.Inventory.Presentation.Endpoints;
 using AllenStock.API.Sales.Application.Services;
 using AllenStock.API.Sales.Presentation.Endpoints;
 using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +34,25 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+builder.Services.AddAuthorization(); // Habilitar validación de roles
+
+// ---> 2. INYECCIÓN DEL SERVICIO IAM (Debajo de los otros servicios)
+builder.Services.AddScoped<IIamService, IamService>();
+
 // ---> 2. INYECCIÓN DE DEPENDENCIAS: Registrar el servicio del catálogo
 builder.Services.AddScoped<ICatalogService, CatalogService>();
 
@@ -45,6 +69,10 @@ var app = builder.Build();
 
 app.UseCors("VueCorsPolicy");
 
+// ---> 3. ACTIVAR MIDDLEWARES DE SEGURIDAD (Obligatorio ponerlos antes de los endpoints)
+app.UseAuthentication();
+app.UseAuthorization();
+
 // 3. Endpoint base de prueba
 app.MapGet("/", () => "AllenStock AI API - Funcionando correctamente");
 
@@ -59,5 +87,8 @@ app.MapSalesEndpoints();
 
 // Registrar los endpoints de caja
 app.MapCashEndpoints();
+
+// ---> 4. REGISTRAR EL ENDPOINT DE LOGIN
+app.MapIamEndpoints();
 
 app.Run();
