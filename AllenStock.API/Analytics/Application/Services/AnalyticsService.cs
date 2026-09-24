@@ -1,4 +1,6 @@
 ﻿using AllenStock.API.Analytics.Application.DTOs;
+using AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace AllenStock.API.Analytics.Application.Services;
 
@@ -7,19 +9,31 @@ public interface IAnalyticsService
     Task<IEnumerable<AiRecommendationResponseDto>> GetPredictionsAsync();
 }
 
-/// <summary>
-/// Servicio de aplicación que interactuará con los modelos predictivos.
-/// Creado por: Gustavo Alonso Olivares Lao
-/// </summary>
 public class AnalyticsService : IAnalyticsService
 {
+    private readonly AppDbContext _context;
+
+    // Inyectamos la conexión a PostgreSQL
+    public AnalyticsService(AppDbContext context)
+    {
+        _context = context;
+    }
+
     public async Task<IEnumerable<AiRecommendationResponseDto>> GetPredictionsAsync()
     {
-        // En un entorno de producción, aquí inyectarías la SDK de OpenAI 
-        // para analizar la tabla de Ventas y el Kardex. 
-        // Por ahora, devolveremos una estructura idéntica a la que generaría el LLM.
-        await Task.Delay(1500); // Simulamos el tiempo de respuesta de la API de IA
+        await Task.Delay(1500); // Simulamos el tiempo de respuesta de la API de OpenAI
 
+        // 1. Verificamos si el descuento sugerido ya fue aprobado y guardado en la BD
+        bool promotionAlreadyExists = await _context.Promotions
+            .AnyAsync(p => p.ProductId == 2 && p.Status == "Activa");
+
+        // 2. Si ya existe, devolvemos una lista vacía (no hay nuevas sugerencias)
+        if (promotionAlreadyExists)
+        {
+            return new List<AiRecommendationResponseDto>();
+        }
+
+        // 3. Si no existe, enviamos la sugerencia al frontend
         return new List<AiRecommendationResponseDto>
         {
             new AiRecommendationResponseDto(

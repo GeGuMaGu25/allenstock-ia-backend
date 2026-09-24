@@ -1,11 +1,9 @@
-﻿namespace AllenStock.API.Promotions.Application.DTOs;
+﻿using System.Text.Json.Serialization;
 
-/// <summary>
-/// DTO para recibir la aprobación del administrador y guardar el descuento.
-/// Creado por: Gustavo Alonso Olivares Lao
-/// </summary>
+namespace AllenStock.API.Promotions.Application.DTOs;
+
 public record ApplyPromotionRequestDto(
-    int producto_id, 
-    decimal porcentaje_descuento, 
-    string justificacion_ia
+    [property: JsonPropertyName("producto_id")] int producto_id, 
+    [property: JsonPropertyName("porcentaje_descuento")] decimal porcentaje_descuento, 
+    [property: JsonPropertyName("justificacion_ia")] string justificacion_ia
 );
