@@ -25,7 +25,6 @@
       <Folder Include="IAM\" />
       <Folder Include="Promotions\" />
       <Folder Include="Purchasing\" />
-      <Folder Include="Sales\" />
     </ItemGroup>
 
 </Project>
