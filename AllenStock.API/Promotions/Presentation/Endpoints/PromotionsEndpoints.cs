@@ -14,5 +14,12 @@ public static class PromotionsEndpoints
             if (success) return Results.Ok(new { message = "Promoción registrada exitosamente en la base de datos." });
             return Results.BadRequest();
         });
+        
+        // NUEVO: Endpoint para listar promociones
+        group.MapGet("/active", async (IPromotionsService promotionsService) =>
+        {
+            var promotions = await promotionsService.GetActivePromotionsAsync();
+            return Results.Ok(promotions);
+        });
     }
 }
