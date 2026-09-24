@@ -6,6 +6,7 @@ using AllenStock.API.Promotions.Domain.Entities;
 using AllenStock.API.Purchasing.Domain.Entities;
 using AllenStock.API.Sales.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+
 namespace AllenStock.API.Shared.Infrastructure.Persistence.Contexts;
 
 public class AppDbContext : DbContext
@@ -40,6 +41,7 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasColumnName("nombre").HasMaxLength(100).IsRequired();
             entity.Property(e => e.Description).HasColumnName("descripcion").HasColumnType("text");
+            entity.Property(e => e.IsActive).HasColumnName("activo").HasDefaultValue(true);
         });
 
         // Mapeo estricto de Productos
@@ -48,21 +50,28 @@ public class AppDbContext : DbContext
             entity.ToTable("Productos");
             entity.HasKey(e => e.Id);
             
-            entity.Property(e => e.Barcode).HasColumnName("codigo_barras").HasMaxLength(50).IsRequired();
-            entity.HasIndex(e => e.Barcode).IsUnique(); // UNIQUE NOT NULL
+            entity.Property(e => e.Sku).HasColumnName("codigo_barras").HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => e.Sku).IsUnique(); // UNIQUE NOT NULL
             
             entity.Property(e => e.Name).HasColumnName("nombre").HasMaxLength(200).IsRequired();
             entity.Property(e => e.PurchasePrice).HasColumnName("precio_compra").HasColumnType("decimal(10,2)").IsRequired();
-            entity.Property(e => e.SalePrice).HasColumnName("precio_venta").HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(e => e.Price).HasColumnName("precio_venta").HasColumnType("decimal(10,2)").IsRequired();
             
             entity.Property(e => e.CurrentStock).HasColumnName("stock_actual").HasDefaultValue(0);
             entity.Property(e => e.MinimumStock).HasColumnName("stock_minimo").HasDefaultValue(5);
             entity.Property(e => e.ExpirationDate).HasColumnName("fecha_vencimiento").HasColumnType("date");
             entity.Property(e => e.Status).HasColumnName("estado").HasMaxLength(20).HasDefaultValue("Activo");
             
-            // Foráneas
-            entity.Property(e => e.CategoryId).HasColumnName("categoria_id");
+            // Nuevos campos y Foráneas
+            entity.Property(e => e.ImageUrl).HasColumnName("imagen_url").HasColumnType("text");
+            entity.Property(e => e.CategoryId).HasColumnName("categoria_id").IsRequired();
             entity.Property(e => e.SupplierId).HasColumnName("proveedor_id");
+
+            // Relación 1 a N (Categoría - Productos)
+            entity.HasOne(d => d.Category)
+                  .WithMany(p => p.Products)
+                  .HasForeignKey(d => d.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
         
         // Mapeo estricto del Kardex
@@ -191,34 +200,5 @@ public class AppDbContext : DbContext
             
             entity.Property(e => e.CreatedAt).HasColumnName("fecha_creacion").HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
-        
-        // ---> SEEDING: Inserción de datos iniciales
-        modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Electrónica", Description = "Laptops, monitores y componentes" },
-            new Category { Id = 2, Name = "Accesorios", Description = "Periféricos y cables" }
-        );
-
-        modelBuilder.Entity<Product>().HasData(
-            new Product { 
-                Id = 1, 
-                Barcode = "7751234567890", 
-                Name = "Laptop ASUS ROG", 
-                CategoryId = 1, 
-                PurchasePrice = 1200.00m, 
-                SalePrice = 1500.00m, 
-                CurrentStock = 10, 
-                SupplierId = 1 
-            },
-            new Product { 
-                Id = 2, 
-                Barcode = "7750987654321", 
-                Name = "Teclado Mecánico", 
-                CategoryId = 2, 
-                PurchasePrice = 50.00m, 
-                SalePrice = 85.50m, 
-                CurrentStock = 25, 
-                SupplierId = 1 
-            }
-        );
     }
 }
