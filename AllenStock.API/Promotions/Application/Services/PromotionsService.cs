@@ -26,24 +26,28 @@ public class PromotionsService : IPromotionsService
     
     public async Task<IEnumerable<PromotionResponseDto>> GetActivePromotionsAsync()
     {
-        var activePromotions = await _context.Promotions
+        // 1. Fase SQL: Traemos los datos crudos a la memoria (se traduce perfectamente a PostgreSQL)
+        var rawData = await _context.Promotions
             .Where(p => p.Status == "Activa")
             .Join(
                 _context.Products, 
                 promocion => promocion.ProductId, 
                 producto => producto.Id, 
-                (promocion, producto) => new PromotionResponseDto(
-                    promocion.Id,
-                    promocion.ProductId,
-                    producto.Name,
-                    promocion.DiscountPercentage,
-                    promocion.Reason,
-                    promocion.Status,
-                    promocion.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                )
+                (promocion, producto) => new { promocion, producto } // Objeto anónimo temporal
             )
-            .OrderByDescending(p => p.fecha_creacion)
-            .ToListAsync();
+            .OrderByDescending(x => x.promocion.CreatedAt) // Ordenamos por el DateTime real
+            .ToListAsync(); // Traemos de la BD a la RAM
+
+        // 2. Fase Memoria: Transformamos los datos al DTO y formateamos la fecha con C#
+        var activePromotions = rawData.Select(x => new PromotionResponseDto(
+            x.promocion.Id,
+            x.promocion.ProductId,
+            x.producto.Name,
+            x.promocion.DiscountPercentage,
+            x.promocion.Reason,
+            x.promocion.Status,
+            x.promocion.CreatedAt.ToString("yyyy-MM-dd HH:mm") // Ahora sí funciona porque ya no es SQL
+        ));
 
         return activePromotions;
     }
